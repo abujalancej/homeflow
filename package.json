@@ -1,0 +1,55 @@
+{
+  "name": "homeflow",
+  "productName": "HomeFlow",
+  "version": "1.0.0",
+  "description": "Private, local-first personal finance tracking.",
+  "private": true,
+  "main": "electron/main.cjs",
+  "author": "abujalancej",
+  "homepage": "https://github.com/abujalancej/homeflow",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abujalancej/homeflow.git"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "eslint",
+    "desktop:dev": "concurrently --kill-others --success first --names next,electron \"npm run dev\" \"wait-on http-get://127.0.0.1:3000 && electron-forge start\"",
+    "desktop:icons": "node scripts/generate-desktop-icons.cjs",
+    "desktop:build": "npm run build && node scripts/prepare-electron.cjs",
+    "desktop:package": "npm run desktop:build && electron-forge package",
+    "desktop:make": "npm run desktop:build && electron-forge make"
+  },
+  "dependencies": {
+    "@fortawesome/free-solid-svg-icons": "^7.3.1",
+    "@fortawesome/react-fontawesome": "^3.5.0",
+    "lucide-react": "^1.35.0",
+    "next": "16.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.11.2",
+    "@electron-forge/maker-deb": "^7.11.2",
+    "@electron-forge/maker-dmg": "^7.11.2",
+    "@electron-forge/maker-rpm": "^7.11.2",
+    "@electron-forge/maker-squirrel": "^7.11.2",
+    "@electron-forge/maker-zip": "^7.11.2",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^22.20.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "concurrently": "^10.0.5",
+    "electron": "^44.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.1",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "wait-on": "^9.1.0"
+  }
+}

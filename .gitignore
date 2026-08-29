@@ -1,0 +1,17 @@
+# Dependencies
+/node_modules/
+
+# Next.js build output
+/.next/
+
+# Electron Forge output
+/out/
+
+# Local financial data
+/data/
+
+# TypeScript incremental build metadata
+*.tsbuildinfo
+
+# macOS metadata
+.DS_Store

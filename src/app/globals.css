@@ -141,7 +141,7 @@ button:disabled {
   height: clamp(118px, 16vw, 148px);
   display: grid;
   place-items: center;
-  animation: splash-float 1.8s ease-in-out infinite;
+  animation: splash-heartbeat 2.2s ease-in-out infinite;
 }
 
 .splash-logo img {
@@ -4753,14 +4753,26 @@ html[data-theme="dark"] .data-transfer-actions .button.data-transfer-import:hove
   display: none;
 }
 
-@keyframes splash-float {
+@keyframes splash-heartbeat {
   0%,
   100% {
-    transform: translateY(0) rotate(-1deg);
+    transform: scale(1);
   }
 
-  50% {
-    transform: translateY(-7px) rotate(1deg);
+  8% {
+    transform: scale(1.018);
+  }
+
+  16% {
+    transform: scale(1);
+  }
+
+  24% {
+    transform: scale(1.035);
+  }
+
+  38% {
+    transform: scale(1);
   }
 }
 

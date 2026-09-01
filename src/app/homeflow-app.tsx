@@ -883,15 +883,6 @@ function PreferencesMenu({
                 abujalancej
               </a>
             </div>
-            <a
-              className="preferences-attribution"
-              href="https://www.flaticon.com/free-icons/piggy-bank"
-              title="piggy bank icons"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Piggy bank icons created by Magnific - Flaticon
-            </a>
           </footer>
         </section>
       )}

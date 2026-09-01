@@ -12,7 +12,7 @@ const {
 
 const DEVELOPMENT_URL =
   process.env.HOMEFLOW_DESKTOP_URL || "http://127.0.0.1:3000";
-const ALLOWED_EXTERNAL_HOSTS = new Set(["github.com", "www.flaticon.com"]);
+const ALLOWED_EXTERNAL_HOSTS = new Set(["github.com"]);
 
 let applicationOrigin = "";
 let applicationUrl = "";

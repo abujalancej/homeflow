@@ -18,7 +18,6 @@ module.exports = {
     extraResource: [
       path.join(__dirname, ".next", "standalone"),
       path.join(__dirname, "public", "homeflow-logo.png"),
-      path.join(__dirname, "THIRD_PARTY_NOTICES.md"),
     ],
     ignore: [
       /^\/\.next($|\/)/,
@@ -30,7 +29,7 @@ module.exports = {
       /^\/public($|\/)/,
       /^\/scripts($|\/)/,
       /^\/src($|\/)/,
-      /^\/(?:\.gitignore|\.nvmrc|AGENTS\.md|README(?:\.[a-z]+)?\.md|THIRD_PARTY_NOTICES\.md)$/,
+      /^\/(?:\.gitignore|\.nvmrc|AGENTS\.md|README(?:\.[a-z]+)?\.md)$/,
       /^\/(?:eslint|next|postcss)\.config\.(?:cjs|mjs|ts)$/,
       /^\/(?:forge\.config\.cjs|next-env\.d\.ts|package-lock\.json|tsconfig(?:\.tsbuildinfo|\.json))$/,
     ],

@@ -88,6 +88,18 @@ import {
 } from "@/lib/homeflow-demo";
 
 type EntryGroup = "receivables" | "payables";
+type RegisterDeleteKind =
+  | "account"
+  | "income"
+  | "cash"
+  | EntryGroup
+  | "commitment"
+  | "adjustment";
+type RegisterDeleteTarget = {
+  id: string;
+  kind: RegisterDeleteKind;
+  name: string;
+};
 type EvolutionRangeMode = "recent" | "custom" | "all";
 type EvolutionMetric = "netWorth" | "savings" | "income" | "spending";
 type Theme = "light" | "dark";
@@ -978,6 +990,8 @@ export default function HomeflowApp({
   const [isMonthEditing, setIsMonthEditing] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<HomeflowMonth | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [deleteItemTarget, setDeleteItemTarget] =
+    useState<RegisterDeleteTarget | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isGoalSaving, setIsGoalSaving] = useState(false);
@@ -1170,6 +1184,7 @@ export default function HomeflowApp({
     setDraftOriginalId("");
     setDeleteTarget(null);
     setDeleteConfirmation("");
+    setDeleteItemTarget(null);
     setIsMonthEditing(false);
     setIsGoalEditing(false);
     setIsDirty(false);
@@ -1413,6 +1428,69 @@ export default function HomeflowApp({
       current.filter((commitment) => commitment.id !== id),
     );
     setIsCommitmentsDirty(true);
+  }
+
+  function requestDeleteItem(kind: RegisterDeleteKind, id: string) {
+    let name: string | undefined;
+
+    switch (kind) {
+      case "account":
+        name = draft?.accounts.find((account) => account.id === id)?.name;
+        break;
+      case "income":
+        name = draft?.incomeEntries.find((entry) => entry.id === id)?.name;
+        break;
+      case "cash":
+        name = draft?.cashEntries.find((entry) => entry.id === id)?.name;
+        break;
+      case "receivables":
+      case "payables":
+        name = draft?.[kind]?.find((entry) => entry.id === id)?.name;
+        break;
+      case "commitment":
+        name = futureCommitments.find((commitment) => commitment.id === id)?.name;
+        break;
+      case "adjustment":
+        name = draft?.adjustments.find((adjustment) => adjustment.id === id)?.name;
+        break;
+    }
+
+    if (name === undefined) return;
+
+    setDeleteItemTarget({
+      id,
+      kind,
+      name: name.trim() || t("Elemento sin nombre"),
+    });
+  }
+
+  function confirmDeleteItem() {
+    const target = deleteItemTarget;
+    if (!target) return;
+
+    switch (target.kind) {
+      case "account":
+        removeAccount(target.id);
+        break;
+      case "income":
+        removeIncomeEntry(target.id);
+        break;
+      case "cash":
+        removeCashEntry(target.id);
+        break;
+      case "receivables":
+      case "payables":
+        removeEntry(target.kind, target.id);
+        break;
+      case "commitment":
+        removeFutureCommitment(target.id);
+        break;
+      case "adjustment":
+        removeAdjustment(target.id);
+        break;
+    }
+
+    setDeleteItemTarget(null);
   }
 
   function convertFutureCommitment(id: string) {
@@ -2623,7 +2701,7 @@ export default function HomeflowApp({
                         key={account.id}
                         onBalanceChange={updateAccountBalance}
                         onNameChange={updateAccountName}
-                        onRemove={removeAccount}
+                        onRemove={(id) => requestDeleteItem("account", id)}
                       />
                     ))}
                   </div>
@@ -2635,7 +2713,7 @@ export default function HomeflowApp({
                   onAdd={addIncomeEntry}
                   onAmountChange={updateIncomeAmount}
                   onNameChange={updateIncomeName}
-                  onRemove={removeIncomeEntry}
+                  onRemove={(id) => requestDeleteItem("income", id)}
                   total={draft.income}
                 />
 
@@ -2645,7 +2723,7 @@ export default function HomeflowApp({
                   onAdd={addCashEntry}
                   onAmountChange={updateCashAmount}
                   onNameChange={updateCashName}
-                  onRemove={removeCashEntry}
+                  onRemove={(id) => requestDeleteItem("cash", id)}
                   total={draft.cash}
                 />
 
@@ -2656,7 +2734,7 @@ export default function HomeflowApp({
                   onAdd={addEntry}
                   onAmountChange={updateEntryAmount}
                   onNameChange={updateEntryName}
-                  onRemove={removeEntry}
+                  onRemove={(group, id) => requestDeleteItem(group, id)}
                   disabled={!canEditMonth}
                   title={t("Me deben")}
                   total={summary.receivableTotal}
@@ -2669,7 +2747,7 @@ export default function HomeflowApp({
                   onAdd={addEntry}
                   onAmountChange={updateEntryAmount}
                   onNameChange={updateEntryName}
-                  onRemove={removeEntry}
+                  onRemove={(group, id) => requestDeleteItem(group, id)}
                   disabled={!canEditMonth}
                   title={t("Debo")}
                   total={summary.payableTotal}
@@ -2688,7 +2766,7 @@ export default function HomeflowApp({
                   onNameChange={(id, name) =>
                     updateFutureCommitment(id, { name })
                   }
-                  onRemove={removeFutureCommitment}
+                  onRemove={(id) => requestDeleteItem("commitment", id)}
                   onStatusChange={(id, status) =>
                     updateFutureCommitment(id, { status })
                   }
@@ -2706,7 +2784,7 @@ export default function HomeflowApp({
                   onAdd={addAdjustment}
                   onAmountChange={updateAdjustmentAmount}
                   onNameChange={updateAdjustmentName}
-                  onRemove={removeAdjustment}
+                  onRemove={(id) => requestDeleteItem("adjustment", id)}
                   total={summary.adjustmentTotal}
                 />
 
@@ -2746,6 +2824,13 @@ export default function HomeflowApp({
           }}
           onChangeConfirmation={setDeleteConfirmation}
           onConfirm={confirmDeleteMonth}
+        />
+      )}
+      {view === "register" && deleteItemTarget && (
+        <DeleteItemDialog
+          item={deleteItemTarget}
+          onCancel={() => setDeleteItemTarget(null)}
+          onConfirm={confirmDeleteItem}
         />
       )}
       {pendingImportFile && (
@@ -4570,6 +4655,69 @@ function ImportDataDialog({
             title={t("Importar JSON")}
           >
             <AppIcon icon={faUpload} size={14} />
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function DeleteItemDialog({
+  item,
+  onCancel,
+  onConfirm,
+}: {
+  item: RegisterDeleteTarget;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <div className="modal-backdrop" role="presentation">
+      <section
+        aria-label={t("Confirmar eliminación")}
+        aria-modal="true"
+        className="confirm-modal"
+        role="dialog"
+      >
+        <button
+          className="icon-button muted modal-close action-cancel"
+          type="button"
+          onClick={onCancel}
+          aria-label={t("Cerrar")}
+          title={t("Cerrar")}
+        >
+          <AppIcon icon={faXmark} size={14} />
+        </button>
+        <div className="confirm-modal-heading">
+          <span className="confirm-modal-icon" aria-hidden="true">
+            <AppIcon icon={faTrash} size={22} />
+          </span>
+          <div>
+            <span className="confirm-modal-eyebrow">{t("Confirmación")}</span>
+            <h2>{t("Eliminar {name}", { name: item.name })}</h2>
+          </div>
+        </div>
+        <p>{t("¿Seguro que quieres continuar?")}</p>
+        <div className="modal-actions">
+          <button
+            className="button secondary icon-only action-cancel"
+            type="button"
+            onClick={onCancel}
+            aria-label={t("Cancelar")}
+            title={t("Cancelar")}
+          >
+            <AppIcon icon={faArrowLeft} size={14} />
+          </button>
+          <button
+            className="button danger icon-only action-delete"
+            type="button"
+            onClick={onConfirm}
+            aria-label={t("Confirmar eliminación")}
+            title={t("Confirmar eliminación")}
+          >
+            <AppIcon icon={faTrash} size={14} />
           </button>
         </div>
       </section>

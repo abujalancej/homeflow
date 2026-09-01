@@ -2,6 +2,10 @@
 
 **English** · [Español](README.es.md) · [Català](README.ca.md)
 
+<p align="center">
+  <img src="public/homeflow-logo.png" alt="HomeFlow logo" width="220">
+</p>
+
 HomeFlow `1.0.0` is a private household finance application for recording monthly account balances, cash, income, receivables, payables, wealth adjustments, and annual savings goals.
 
 It presents the household position as a monthly closing rather than as a transaction ledger. From those closings, HomeFlow calculates net worth, real and operational savings, estimated spending, savings rate, historical evolution, and year-end forecast scenarios.

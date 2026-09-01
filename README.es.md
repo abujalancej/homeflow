@@ -2,6 +2,10 @@
 
 [English](README.md) · **Español** · [Català](README.ca.md)
 
+<p align="center">
+  <img src="public/homeflow-logo.png" alt="Logo de HomeFlow" width="220">
+</p>
+
 HomeFlow `1.0.0` es una aplicación privada de finanzas domésticas para registrar mensualmente saldos de cuentas, efectivo, ingresos, cobros pendientes, pagos pendientes, ajustes patrimoniales y objetivos anuales de ahorro.
 
 La aplicación representa la situación económica del hogar mediante cierres mensuales, no como un libro de movimientos. A partir de esos cierres, HomeFlow calcula el patrimonio neto, el ahorro real y operativo, el gasto estimado, la tasa de ahorro, la evolución histórica y distintos escenarios de previsión al final del año.

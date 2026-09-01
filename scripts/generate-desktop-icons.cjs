@@ -6,7 +6,6 @@ const path = require("node:path");
 const projectDirectory = path.resolve(__dirname, "..");
 const assetsDirectory = path.join(projectDirectory, "assets");
 const logoPath = path.join(projectDirectory, "public", "homeflow-logo.png");
-const faviconPath = path.join(projectDirectory, "src", "app", "favicon.ico");
 const temporaryDirectory = fs.mkdtempSync(
   path.join(os.tmpdir(), "homeflow-icons-"),
 );
@@ -31,8 +30,29 @@ function createIcnsChunk(type, data) {
 
 function generateDesktopIcons() {
   fs.mkdirSync(assetsDirectory, { recursive: true });
-  fs.copyFileSync(faviconPath, path.join(assetsDirectory, "homeflow.ico"));
   fs.copyFileSync(logoPath, path.join(assetsDirectory, "homeflow.png"));
+
+  const icoResult = spawnSync(
+    "sips",
+    [
+      "-z",
+      "256",
+      "256",
+      "-s",
+      "format",
+      "ico",
+      logoPath,
+      "--out",
+      path.join(assetsDirectory, "homeflow.ico"),
+    ],
+    { stdio: "ignore" },
+  );
+
+  if (icoResult.error || icoResult.status !== 0) {
+    throw new Error(
+      "Desktop icon regeneration requires the macOS sips command.",
+    );
+  }
 
   const chunks = iconRepresentations.map(({ size, type }) => {
     const outputPath = path.join(temporaryDirectory, `${size}.png`);

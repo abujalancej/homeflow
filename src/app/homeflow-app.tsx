@@ -1070,6 +1070,11 @@ export default function HomeflowApp({
       const goalYear = firstMonth
         ? Number(firstMonth.month.slice(0, 4))
         : new Date().getFullYear();
+      const initialDraft = firstMonth
+        ? cloneMonth(firstMonth)
+        : view === "register"
+          ? createMonthFromTemplate(getCurrentMonthValue(), null, t)
+          : null;
 
       setMonths(store.months);
       setAnnualGoals(store.annualGoals ?? []);
@@ -1078,10 +1083,10 @@ export default function HomeflowApp({
         cloneFutureCommitments(store.futureCommitments ?? []),
       );
       setActiveYear(goalYear);
-      setDraft(firstMonth ? cloneMonth(firstMonth) : null);
+      setDraft(initialDraft);
       setDraftOriginalId(firstMonth?.id ?? "");
-      setIsMonthEditing(false);
-      setIsDirty(false);
+      setIsMonthEditing(!firstMonth && view === "register");
+      setIsDirty(!firstMonth && view === "register");
       setIsCommitmentsDirty(false);
       setGoalDraft(getGoalForYear(store.annualGoals ?? [], goalYear, t));
       setIsGoalDirty(false);
@@ -1217,6 +1222,30 @@ export default function HomeflowApp({
     setIsGoalDirty(false);
     setIsCommitmentsDirty(false);
     void loadStore(nextMode);
+  }
+
+  function createNewMonth() {
+    const template = draftOriginalId ? draft : descendingMonths[0] ?? null;
+    const usedMonths = new Set(months.map((month) => month.month));
+    let monthValue = template
+      ? getNextMonthValue(template.month)
+      : getCurrentMonthValue();
+
+    while (usedMonths.has(monthValue)) {
+      monthValue = getNextMonthValue(monthValue);
+    }
+
+    const nextDraft = createMonthFromTemplate(monthValue, template, t);
+    setDraft(nextDraft);
+    setDraftOriginalId("");
+    setIsMonthEditing(true);
+    setActiveYear(Number(nextDraft.month.slice(0, 4)));
+    window.localStorage.setItem(
+      `${ACTIVE_MONTH_KEY}.${dataMode}`,
+      nextDraft.id,
+    );
+    setIsDirty(true);
+    syncGoalForYear(Number(nextDraft.month.slice(0, 4)));
   }
 
   const orderedMonths = useMemo(() => sortMonthsAscending(months), [months]);
@@ -1540,30 +1569,6 @@ export default function HomeflowApp({
       current.filter((item) => item.id !== id),
     );
     setIsCommitmentsDirty(true);
-  }
-
-  function createNewMonth() {
-    const template = draft ?? descendingMonths[0] ?? null;
-    const usedMonths = new Set(months.map((month) => month.month));
-    let monthValue = template
-      ? getNextMonthValue(template.month)
-      : getCurrentMonthValue();
-
-    while (usedMonths.has(monthValue)) {
-      monthValue = getNextMonthValue(monthValue);
-    }
-
-    const nextDraft = createMonthFromTemplate(monthValue, template, t);
-    setDraft(nextDraft);
-    setDraftOriginalId("");
-    setIsMonthEditing(true);
-    setActiveYear(Number(nextDraft.month.slice(0, 4)));
-    window.localStorage.setItem(
-      `${ACTIVE_MONTH_KEY}.${dataMode}`,
-      nextDraft.id,
-    );
-    setIsDirty(true);
-    syncGoalForYear(Number(nextDraft.month.slice(0, 4)));
   }
 
   async function saveMonth() {
@@ -2219,7 +2224,7 @@ export default function HomeflowApp({
           {!isLoading && !draft && (
             <EmptyState
               title={t("Sin cierres")}
-              copy={t("Crea el primer mes para empezar.")}
+              copy={t("Ve a Registro para crear el primer mes.")}
             />
           )}
 

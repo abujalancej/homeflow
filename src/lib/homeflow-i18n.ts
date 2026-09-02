@@ -87,6 +87,8 @@ const translations: Record<Language, Record<string, string>> = {
     "Sin datos": "Sense dades",
     "Crea el primer mes para empezar.":
       "Crea el primer mes per començar.",
+    "Ve a Registro para crear el primer mes.":
+      "Ves a Registre per crear el primer mes.",
     "Cierre analizado": "Tancament analitzat",
     "Cierre mensual": "Tancament mensual",
     Mes: "Mes",
@@ -401,6 +403,8 @@ const translations: Record<Language, Record<string, string>> = {
     "Sin datos": "No data",
     "Crea el primer mes para empezar.":
       "Create the first month to get started.",
+    "Ve a Registro para crear el primer mes.":
+      "Go to Register to create the first month.",
     "Cierre analizado": "Analysed closing",
     "Cierre mensual": "Monthly closing",
     Mes: "Month",

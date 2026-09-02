@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Moon, Sun } from "lucide-react";
 import {
   faArrowDown,
   faArrowLeft,
@@ -25,7 +24,6 @@ import {
   faFileExport,
   faFileExcel,
   faFloppyDisk,
-  faGlobe,
   faHouse,
   faCircleInfo,
   faLandmark,
@@ -804,23 +802,41 @@ function PreferencesMenu({
             <small>{t("Personaliza HomeFlow")}</small>
           </div>
 
-          <label className="preference-field language-field">
+          <div className="preference-field language-field">
             <span className="preference-label">
-              <AppIcon icon={faGlobe} size={12} />
               {t("Idioma")}
             </span>
-            <select
-              value={language}
-              onChange={(event) =>
-                onLanguageChange(event.target.value as Language)
-              }
+            <div
+              className="data-mode-switch language-switch"
+              role="group"
               aria-label={t("Idioma de la aplicación")}
             >
-              <option value="es">Español</option>
-              <option value="ca">Català</option>
-              <option value="en">English</option>
-            </select>
-          </label>
+              <button
+                type="button"
+                aria-label="Español"
+                aria-pressed={language === "es"}
+                onClick={() => onLanguageChange("es")}
+              >
+                <span>ESP</span>
+              </button>
+              <button
+                type="button"
+                aria-label="Català"
+                aria-pressed={language === "ca"}
+                onClick={() => onLanguageChange("ca")}
+              >
+                <span>CAT</span>
+              </button>
+              <button
+                type="button"
+                aria-label="English"
+                aria-pressed={language === "en"}
+                onClick={() => onLanguageChange("en")}
+              >
+                <span>ENG</span>
+              </button>
+            </div>
+          </div>
 
           <div className="preference-field">
             <span className="preference-label">{t("Moneda")}</span>
@@ -857,7 +873,6 @@ function PreferencesMenu({
                 aria-label={t("Activar apariencia clara")}
                 onClick={() => changeTheme("light")}
               >
-                <Sun aria-hidden="true" size={14} strokeWidth={2.2} />
                 <span>{t("Claro")}</span>
               </button>
               <button
@@ -866,7 +881,6 @@ function PreferencesMenu({
                 aria-label={t("Activar apariencia oscura")}
                 onClick={() => changeTheme("dark")}
               >
-                <Moon aria-hidden="true" size={14} strokeWidth={2.2} />
                 <span>{t("Oscuro")}</span>
               </button>
             </div>

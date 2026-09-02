@@ -141,6 +141,8 @@ const CURRENCY_KEY = "homeflow.currency";
 const DEMO_STORE_KEY = "homeflow.demoStore";
 const LANGUAGE_KEY = "homeflow.language";
 const THEME_KEY = "homeflow.theme";
+const SPLASH_MIN_VISIBLE_MS = 2200;
+const SPLASH_FADE_MS = 440;
 let hasShownAppSplash = false;
 const VIEW_NAV: {
   href: string;
@@ -677,17 +679,27 @@ function AppSplash({ ready }: { ready: boolean }) {
   const [phase, setPhase] = useState<SplashPhase>(() =>
     hasShownAppSplash ? "hidden" : "visible",
   );
+  const startedAtRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!ready || hasShownAppSplash) return;
+    if (hasShownAppSplash) return;
+
+    if (startedAtRef.current === null) {
+      startedAtRef.current = Date.now();
+    }
+
+    if (!ready) return;
+
+    const elapsed = Date.now() - startedAtRef.current;
+    const delayBeforeLeaving = Math.max(0, SPLASH_MIN_VISIBLE_MS - elapsed);
 
     const leaveTimer = window.setTimeout(() => {
       setPhase("leaving");
-    }, 320);
+    }, delayBeforeLeaving);
     const hideTimer = window.setTimeout(() => {
       hasShownAppSplash = true;
       setPhase("hidden");
-    }, 780);
+    }, delayBeforeLeaving + SPLASH_FADE_MS);
 
     return () => {
       window.clearTimeout(leaveTimer);

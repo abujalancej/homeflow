@@ -185,11 +185,24 @@ async function createMainWindow(url) {
   await mainWindow.loadURL(url);
 }
 
-async function startApplication() {
-  session.defaultSession.setPermissionCheckHandler(() => false);
-  session.defaultSession.setPermissionRequestHandler(
+async function prepareApplicationSession() {
+  const applicationSession = session.defaultSession;
+
+  applicationSession.setPermissionCheckHandler(() => false);
+  applicationSession.setPermissionRequestHandler(
     (_webContents, _permission, callback) => callback(false),
   );
+
+  if (app.isPackaged) {
+    await Promise.all([
+      applicationSession.clearCache(),
+      applicationSession.clearCodeCaches({}),
+    ]);
+  }
+}
+
+async function startApplication() {
+  await prepareApplicationSession();
 
   applicationUrl = app.isPackaged
     ? await startStandaloneServer()

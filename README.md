@@ -6,7 +6,7 @@
   <img src="public/homeflow-logo.png" alt="HomeFlow logo" width="220">
 </p>
 
-HomeFlow `1.0.0` is a private household finance application for recording monthly account balances, cash, income, receivables, payables, wealth adjustments, and annual savings goals.
+HomeFlow is a private household finance application for recording monthly account balances, cash, income, receivables, payables, wealth adjustments, and annual savings goals.
 
 It presents the household position as a monthly closing rather than as a transaction ledger. From those closings, HomeFlow calculates net worth, real and operational savings, estimated spending, savings rate, historical evolution, and year-end forecast scenarios.
 
@@ -24,7 +24,7 @@ The interface supports Spanish, Catalan, and English, with dates formatted for t
 - Year-end forecasts based on the savings recorded in previous years.
 - Annual savings goals with accumulable and non-accumulable allocations.
 - Multi-sheet Excel reports for a selected month range.
-- Full database export and import in a versioned JSON format, with an automatic backup before imports.
+- Full database export and import in JSON format, with an automatic backup before imports.
 - Branded splash screen during the initial application load.
 - Editable demo data stored only for the current browser-tab session, isolated from real records.
 - Persistent light and dark appearance modes.
@@ -46,17 +46,17 @@ The interface supports Spanish, Catalan, and English, with dates formatted for t
 
 ## Technology stack
 
-- Next.js `16.3.1` with the App Router and Route Handlers.
-- React `19.2.8`.
-- Electron `44` and Electron Forge `7.11` for the installable desktop application.
+- Next.js with the App Router and Route Handlers.
+- React.
+- Electron and Electron Forge for the installable desktop application.
 - TypeScript with strict type checking.
-- Tailwind CSS `4` and global CSS through PostCSS.
+- Tailwind CSS and global CSS through PostCSS.
 - Font Awesome and Lucide icons.
 - A small in-repository XLSX writer; no spreadsheet library is required.
 
 ## Requirements
 
-- Node.js `22.13.0` or newer. The current Electron toolchain requires Node.js 22.
+- Node.js compatible with the current Electron toolchain.
 - npm, using the included `package-lock.json`.
 - A writable local filesystem for `data/homeflow.json`.
 
@@ -271,7 +271,7 @@ All API routes use the Node.js runtime and are dynamically rendered.
 | `GET` | `/api/commitments` | Return the future commitments collection. |
 | `PUT` | `/api/commitments` | Replace the future commitments collection and return the updated store. |
 | `GET` | `/api/export?from=YYYY-MM&to=YYYY-MM` | Download an Excel workbook for the inclusive month range. |
-| `GET` | `/api/data` | Download the complete versioned database backup as JSON. |
+| `GET` | `/api/data` | Download the complete database backup as JSON. |
 | `POST` | `/api/data` | Validate and import a database backup, saving the current store as a backup first. |
 
 The export endpoint accepts either, both, or neither range parameter. Without parameters, it exports the complete history.

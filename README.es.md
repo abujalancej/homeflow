@@ -6,7 +6,7 @@
   <img src="public/homeflow-logo.png" alt="Logo de HomeFlow" width="220">
 </p>
 
-HomeFlow `1.0.0` es una aplicación privada de finanzas domésticas para registrar mensualmente saldos de cuentas, efectivo, ingresos, cobros pendientes, pagos pendientes, ajustes patrimoniales y objetivos anuales de ahorro.
+HomeFlow es una aplicación privada de finanzas domésticas para registrar mensualmente saldos de cuentas, efectivo, ingresos, cobros pendientes, pagos pendientes, ajustes patrimoniales y objetivos anuales de ahorro.
 
 La aplicación representa la situación económica del hogar mediante cierres mensuales, no como un libro de movimientos. A partir de esos cierres, HomeFlow calcula el patrimonio neto, el ahorro real y operativo, el gasto estimado, la tasa de ahorro, la evolución histórica y distintos escenarios de previsión al final del año.
 
@@ -24,7 +24,7 @@ La interfaz admite castellano, catalán e inglés, adapta el formato de las fech
 - Previsiones de cierre anual basadas en el ahorro registrado en años anteriores.
 - Objetivos anuales de ahorro con asignaciones acumulables y no acumulables.
 - Informes Excel con varias hojas para un intervalo de meses.
-- Exportación e importación de la base de datos completa en JSON versionado, con copia de seguridad automática antes de importar.
+- Exportación e importación de la base de datos completa en JSON, con copia de seguridad automática antes de importar.
 - Pantalla de bienvenida de marca durante la carga inicial de la aplicación.
 - Datos de demostración editables, aislados de los registros reales y guardados únicamente durante la sesión de la pestaña actual.
 - Modos de apariencia claro y oscuro con persistencia local.
@@ -46,17 +46,17 @@ La interfaz admite castellano, catalán e inglés, adapta el formato de las fech
 
 ## Tecnologías
 
-- Next.js `16.3.1` con App Router y Route Handlers.
-- React `19.2.8`.
-- Electron `44` y Electron Forge `7.11` para la aplicación de escritorio instalable.
+- Next.js con App Router y Route Handlers.
+- React.
+- Electron y Electron Forge para la aplicación de escritorio instalable.
 - TypeScript con comprobación estricta de tipos.
-- Tailwind CSS `4` y CSS global mediante PostCSS.
+- Tailwind CSS y CSS global mediante PostCSS.
 - Iconos de Font Awesome y Lucide.
 - Un pequeño generador XLSX incluido en el repositorio; no necesita una biblioteca de hojas de cálculo.
 
 ## Requisitos
 
-- Node.js `22.13.0` o posterior. La cadena de herramientas actual de Electron necesita Node.js 22.
+- Node.js compatible con la cadena de herramientas actual de Electron.
 - npm, utilizando el archivo `package-lock.json` incluido.
 - Un sistema de archivos local con permisos de escritura para `data/homeflow.json`.
 
@@ -271,7 +271,7 @@ Todas las rutas de la API utilizan el entorno de ejecución de Node.js y se rend
 | `GET` | `/api/commitments` | Devuelve la colección de compromisos futuros. |
 | `PUT` | `/api/commitments` | Sustituye la colección de compromisos futuros y devuelve el almacén actualizado. |
 | `GET` | `/api/export?from=YYYY-MM&to=YYYY-MM` | Descarga un libro de Excel para el intervalo inclusivo de meses. |
-| `GET` | `/api/data` | Descarga en JSON un respaldo completo y versionado de la base de datos. |
+| `GET` | `/api/data` | Descarga en JSON un respaldo completo de la base de datos. |
 | `POST` | `/api/data` | Valida e importa un respaldo de la base de datos y guarda antes el almacén actual. |
 
 El endpoint de exportación acepta uno, ambos o ninguno de los parámetros del intervalo. Sin parámetros, exporta todo el historial.

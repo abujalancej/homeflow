@@ -1,7 +1,7 @@
 {
   "name": "homeflow",
   "productName": "HomeFlow",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Private, local-first personal finance tracking.",
   "private": true,
   "main": "electron/main.cjs",

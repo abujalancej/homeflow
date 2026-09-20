@@ -6,7 +6,7 @@
   <img src="public/homeflow-logo.png" alt="Logo de HomeFlow" width="220">
 </p>
 
-HomeFlow `1.0.0` és una aplicació privada de finances domèstiques per registrar mensualment saldos de comptes, efectiu, ingressos, cobraments pendents, pagaments pendents, ajustos patrimonials i objectius anuals d'estalvi.
+HomeFlow és una aplicació privada de finances domèstiques per registrar mensualment saldos de comptes, efectiu, ingressos, cobraments pendents, pagaments pendents, ajustos patrimonials i objectius anuals d'estalvi.
 
 L'aplicació representa la situació econòmica de la llar mitjançant tancaments mensuals, no com un llibre de moviments. A partir d'aquests tancaments, HomeFlow calcula el patrimoni net, l'estalvi real i operatiu, la despesa estimada, la taxa d'estalvi, l'evolució històrica i diferents escenaris de previsió de final d'any.
 
@@ -24,7 +24,7 @@ La interfície està disponible en castellà, català i anglès, adapta el forma
 - Previsions de tancament anual basades en l'estalvi registrat en anys anteriors.
 - Objectius anuals d'estalvi amb assignacions acumulables i no acumulables.
 - Informes d'Excel amb diversos fulls per a un interval de mesos.
-- Exportació i importació de la base de dades completa en un format JSON versionat, amb una còpia de seguretat automàtica abans de cada importació.
+- Exportació i importació de la base de dades completa en format JSON, amb una còpia de seguretat automàtica abans de cada importació.
 - Pantalla de benvinguda de marca durant la càrrega inicial de l'aplicació.
 - Dades de demostració editables, aïllades dels registres reals i desades únicament durant la sessió de la pestanya actual.
 - Modes d'aparença clara i fosca amb persistència local.
@@ -46,17 +46,17 @@ La interfície està disponible en castellà, català i anglès, adapta el forma
 
 ## Tecnologies
 
-- Next.js `16.3.1` amb App Router i Route Handlers.
-- React `19.2.8`.
-- Electron `44` i Electron Forge `7.11` per a l'aplicació d'escriptori instal·lable.
+- Next.js amb App Router i Route Handlers.
+- React.
+- Electron i Electron Forge per a l'aplicació d'escriptori instal·lable.
 - TypeScript amb comprovació estricta de tipus.
-- Tailwind CSS `4` i CSS global mitjançant PostCSS.
+- Tailwind CSS i CSS global mitjançant PostCSS.
 - Icones de Font Awesome i Lucide.
 - Un petit generador d'XLSX inclòs al repositori; no cal cap biblioteca de fulls de càlcul.
 
 ## Requisits
 
-- Node.js `22.13.0` o posterior. La cadena d'eines actual d'Electron necessita Node.js 22.
+- Node.js compatible amb la cadena d'eines actual d'Electron.
 - npm, amb el fitxer `package-lock.json` inclòs.
 - Un sistema de fitxers local amb permisos d'escriptura per a `data/homeflow.json`.
 
@@ -271,7 +271,7 @@ Totes les rutes de l'API utilitzen l'entorn d'execució de Node.js i es renderit
 | `GET` | `/api/commitments` | Retorna la col·lecció de compromisos futurs. |
 | `PUT` | `/api/commitments` | Substitueix la col·lecció de compromisos futurs i retorna el magatzem actualitzat. |
 | `GET` | `/api/export?from=YYYY-MM&to=YYYY-MM` | Baixa un llibre d'Excel per a l'interval de mesos, ambdós inclosos. |
-| `GET` | `/api/data` | Baixa en JSON una còpia de seguretat completa i versionada de la base de dades. |
+| `GET` | `/api/data` | Baixa en JSON una còpia de seguretat completa de la base de dades. |
 | `POST` | `/api/data` | Valida i importa una còpia de seguretat de la base de dades, després de desar una còpia del magatzem actual. |
 
 El punt d'accés d'exportació accepta un, tots dos o cap dels paràmetres de l'interval. Sense paràmetres, exporta tot l'historial.

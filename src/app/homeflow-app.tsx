@@ -132,7 +132,7 @@ type ForecastModel = {
   } | null;
 };
 
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.0.1";
 const ACTIVE_MONTH_KEY = "homeflow.activeMonth";
 const DATA_MODE_KEY = "homeflow.dataMode";
 const CURRENCY_KEY = "homeflow.currency";
@@ -142,6 +142,61 @@ const THEME_KEY = "homeflow.theme";
 const SPLASH_MIN_VISIBLE_MS = 2200;
 const SPLASH_FADE_MS = 440;
 let hasShownAppSplash = false;
+let desktopSettings: Record<string, string> | null = null;
+
+type HomeflowDesktopBridge = {
+  getSettings: () => Promise<Record<string, string>>;
+  isDesktop: boolean;
+  removeSetting: (key: string) => Promise<void>;
+  setSetting: (key: string, value: string) => Promise<void>;
+};
+
+function getDesktopBridge() {
+  if (typeof window === "undefined") return null;
+
+  return (
+    window as Window & { homeflowDesktop?: HomeflowDesktopBridge }
+  ).homeflowDesktop ?? null;
+}
+
+function readPersistedSetting(key: string) {
+  if (desktopSettings && Object.prototype.hasOwnProperty.call(desktopSettings, key)) {
+    return desktopSettings[key];
+  }
+
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function persistSetting(key: string, value: string) {
+  if (desktopSettings) desktopSettings[key] = value;
+
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Native desktop storage below remains available if localStorage is unavailable.
+  }
+
+  const bridge = getDesktopBridge();
+  if (bridge) void bridge.setSetting(key, value).catch(() => undefined);
+}
+
+function removePersistedSetting(key: string) {
+  if (desktopSettings) delete desktopSettings[key];
+
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // Native desktop storage below remains available if localStorage is unavailable.
+  }
+
+  const bridge = getDesktopBridge();
+  if (bridge) void bridge.removeSetting(key).catch(() => undefined);
+}
+
 const VIEW_NAV: {
   href: string;
   icon: IconDefinition;
@@ -760,7 +815,7 @@ function PreferencesMenu({
 
   function changeTheme(nextTheme: Theme) {
     document.documentElement.dataset.theme = nextTheme;
-    window.localStorage.setItem(THEME_KEY, nextTheme);
+    persistSetting(THEME_KEY, nextTheme);
   }
 
   return (
@@ -1061,9 +1116,9 @@ export default function HomeflowApp({
       const ordered = sortMonthsDescending(store.months);
       const activeMonthKey = `${ACTIVE_MONTH_KEY}.${mode}`;
       const storedActiveId =
-        window.localStorage.getItem(activeMonthKey) ??
+        readPersistedSetting(activeMonthKey) ??
         (mode === "real"
-          ? window.localStorage.getItem(ACTIVE_MONTH_KEY)
+          ? readPersistedSetting(ACTIVE_MONTH_KEY)
           : null);
       const firstMonth =
         ordered.find((month) => month.id === storedActiveId) ?? ordered[0] ?? null;
@@ -1107,39 +1162,58 @@ export default function HomeflowApp({
   }
 
   useEffect(() => {
-    const storedLanguage = window.localStorage.getItem(LANGUAGE_KEY);
-    const languageTimer =
-      storedLanguage === "es" || storedLanguage === "ca" || storedLanguage === "en"
-        ? window.setTimeout(() => setLanguage(storedLanguage), 0)
-        : null;
+    let cancelled = false;
 
-    const storedMode = window.localStorage.getItem(DATA_MODE_KEY);
-    const initialMode: DataMode = storedMode === "demo" ? "demo" : "real";
-    const storedCurrency = window.localStorage.getItem(CURRENCY_KEY);
-    const currencyTimer =
-      storedCurrency === "EUR" || storedCurrency === "USD"
-        ? window.setTimeout(() => setCurrency(storedCurrency), 0)
-        : null;
+    async function initialise() {
+      const bridge = getDesktopBridge();
 
-    const loadTimer = window.setTimeout(() => {
-      void loadStore(initialMode);
-    }, 0);
+      if (bridge) {
+        try {
+          desktopSettings = await bridge.getSettings();
+        } catch {
+          desktopSettings = {};
+        }
+      } else {
+        desktopSettings = null;
+      }
+
+      if (cancelled) return;
+
+      const storedLanguage = readPersistedSetting(LANGUAGE_KEY);
+      if (storedLanguage === "es" || storedLanguage === "ca" || storedLanguage === "en") {
+        setLanguage(storedLanguage);
+      }
+
+      const storedCurrency = readPersistedSetting(CURRENCY_KEY);
+      if (storedCurrency === "EUR" || storedCurrency === "USD") {
+        setCurrency(storedCurrency);
+      }
+
+      const storedTheme = readPersistedSetting(THEME_KEY);
+      if (storedTheme === "light" || storedTheme === "dark") {
+        document.documentElement.dataset.theme = storedTheme;
+      }
+
+      const storedMode = readPersistedSetting(DATA_MODE_KEY);
+      const initialMode: DataMode = storedMode === "demo" ? "demo" : "real";
+      await loadStore(initialMode);
+    }
+
+    void initialise();
 
     return () => {
-      if (languageTimer !== null) window.clearTimeout(languageTimer);
-      if (currencyTimer !== null) window.clearTimeout(currencyTimer);
-      window.clearTimeout(loadTimer);
+      cancelled = true;
       loadRequestRef.current += 1;
     };
   }, []);
 
   function changeLanguage(nextLanguage: Language) {
-    window.localStorage.setItem(LANGUAGE_KEY, nextLanguage);
+    persistSetting(LANGUAGE_KEY, nextLanguage);
     setLanguage(nextLanguage);
   }
 
   function changeCurrency(nextCurrency: Currency) {
-    window.localStorage.setItem(CURRENCY_KEY, nextCurrency);
+    persistSetting(CURRENCY_KEY, nextCurrency);
     setCurrency(nextCurrency);
   }
 
@@ -1175,9 +1249,9 @@ export default function HomeflowApp({
         );
       }
 
-      window.localStorage.setItem(DATA_MODE_KEY, "real");
-      window.localStorage.removeItem(`${ACTIVE_MONTH_KEY}.real`);
-      window.localStorage.removeItem(ACTIVE_MONTH_KEY);
+      persistSetting(DATA_MODE_KEY, "real");
+      removePersistedSetting(`${ACTIVE_MONTH_KEY}.real`);
+      removePersistedSetting(ACTIVE_MONTH_KEY);
       await loadStore("real");
       setDataTransferStatus("success");
       setDataTransferMessage(
@@ -1205,7 +1279,7 @@ export default function HomeflowApp({
   function changeDataMode(nextMode: DataMode) {
     if (nextMode === dataMode) return;
 
-    window.localStorage.setItem(DATA_MODE_KEY, nextMode);
+    persistSetting(DATA_MODE_KEY, nextMode);
     setDataMode(nextMode);
     setMonths([]);
     setAnnualGoals([]);
@@ -1240,7 +1314,7 @@ export default function HomeflowApp({
     setDraftOriginalId("");
     setIsMonthEditing(true);
     setActiveYear(Number(nextDraft.month.slice(0, 4)));
-    window.localStorage.setItem(
+    persistSetting(
       `${ACTIVE_MONTH_KEY}.${dataMode}`,
       nextDraft.id,
     );
@@ -1428,7 +1502,7 @@ export default function HomeflowApp({
     setDraftOriginalId(month.id);
     setIsMonthEditing(false);
     setActiveYear(Number(month.month.slice(0, 4)));
-    window.localStorage.setItem(`${ACTIVE_MONTH_KEY}.${dataMode}`, month.id);
+    persistSetting(`${ACTIVE_MONTH_KEY}.${dataMode}`, month.id);
     setIsDirty(false);
     setFutureCommitments(cloneFutureCommitments(savedFutureCommitments));
     setIsCommitmentsDirty(false);
@@ -1610,7 +1684,7 @@ export default function HomeflowApp({
         setDraft(cloneMonth(saved));
         setDraftOriginalId(saved.id);
         setIsMonthEditing(false);
-        window.localStorage.setItem(`${ACTIVE_MONTH_KEY}.demo`, saved.id);
+        persistSetting(`${ACTIVE_MONTH_KEY}.demo`, saved.id);
         setIsDirty(false);
         setIsCommitmentsDirty(false);
         return;
@@ -1655,7 +1729,7 @@ export default function HomeflowApp({
         setDraft(cloneMonth(saved));
         setDraftOriginalId(saved.id);
         setIsMonthEditing(false);
-        window.localStorage.setItem(`${ACTIVE_MONTH_KEY}.${dataMode}`, saved.id);
+        persistSetting(`${ACTIVE_MONTH_KEY}.${dataMode}`, saved.id);
       }
 
       setIsDirty(false);
@@ -1769,13 +1843,13 @@ export default function HomeflowApp({
       );
       setDraft(nextActive ? cloneMonth(nextActive) : null);
       if (nextActive) {
-        window.localStorage.setItem(
+        persistSetting(
           `${ACTIVE_MONTH_KEY}.${dataMode}`,
           nextActive.id,
         );
         syncGoalForYear(Number(nextActive.month.slice(0, 4)), store.annualGoals);
       } else {
-        window.localStorage.removeItem(`${ACTIVE_MONTH_KEY}.${dataMode}`);
+        removePersistedSetting(`${ACTIVE_MONTH_KEY}.${dataMode}`);
       }
       setDeleteTarget(null);
       setDeleteConfirmation("");
@@ -2092,7 +2166,7 @@ export default function HomeflowApp({
     if (storedMonth) {
       setDraft(cloneMonth(storedMonth));
       setActiveYear(Number(storedMonth.month.slice(0, 4)));
-      window.localStorage.setItem(
+      persistSetting(
         `${ACTIVE_MONTH_KEY}.${dataMode}`,
         storedMonth.id,
       );
@@ -2126,7 +2200,7 @@ export default function HomeflowApp({
       month: nextMonth,
     }));
     setActiveYear(Number(nextMonth.slice(0, 4)));
-    window.localStorage.setItem(`${ACTIVE_MONTH_KEY}.${dataMode}`, nextMonth);
+    persistSetting(`${ACTIVE_MONTH_KEY}.${dataMode}`, nextMonth);
     syncGoalForYear(Number(nextMonth.slice(0, 4)));
   }
 

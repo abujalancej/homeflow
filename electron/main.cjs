@@ -5,6 +5,7 @@ const {
   app,
   BrowserWindow,
   dialog,
+  ipcMain,
   session,
   shell,
   utilityProcess,
@@ -19,6 +20,71 @@ let applicationUrl = "";
 let isQuitting = false;
 let mainWindow = null;
 let nextServer = null;
+
+const PERSISTED_SETTING_KEYS = new Set([
+  "homeflow.activeMonth",
+  "homeflow.activeMonth.real",
+  "homeflow.activeMonth.demo",
+  "homeflow.currency",
+  "homeflow.dataMode",
+  "homeflow.language",
+  "homeflow.theme",
+]);
+
+function getSettingsPath() {
+  return path.join(app.getPath("userData"), "settings.json");
+}
+
+function readSettings() {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(getSettingsPath(), "utf8"));
+
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return {};
+    }
+
+    return Object.fromEntries(
+      Object.entries(parsed).filter(
+        ([key, value]) =>
+          PERSISTED_SETTING_KEYS.has(key) && typeof value === "string",
+      ),
+    );
+  } catch {
+    return {};
+  }
+}
+
+function writeSettings(settings) {
+  fs.mkdirSync(app.getPath("userData"), { recursive: true });
+  fs.writeFileSync(
+    getSettingsPath(),
+    `${JSON.stringify(settings, null, 2)}\n`,
+    "utf8",
+  );
+}
+
+function assertPersistedSetting(key, value) {
+  if (!PERSISTED_SETTING_KEYS.has(key) || typeof value !== "string") {
+    throw new Error("Invalid HomeFlow setting.");
+  }
+}
+
+ipcMain.handle("homeflow-settings:get", () => readSettings());
+ipcMain.handle("homeflow-settings:set", (_event, key, value) => {
+  assertPersistedSetting(key, value);
+  const settings = readSettings();
+  settings[key] = value;
+  writeSettings(settings);
+});
+ipcMain.handle("homeflow-settings:remove", (_event, key) => {
+  if (!PERSISTED_SETTING_KEYS.has(key)) {
+    throw new Error("Invalid HomeFlow setting.");
+  }
+
+  const settings = readSettings();
+  delete settings[key];
+  writeSettings(settings);
+});
 
 function parseDevelopmentUrl() {
   const url = new URL(DEVELOPMENT_URL);

@@ -3,7 +3,7 @@
 **English** · [Español](README.es.md) · [Català](README.ca.md)
 
 <p align="center">
-  <img src="public/homeflow-logo.png" alt="HomeFlow logo" width="220">
+  <img src="public/homeflow-logo-bg.png" alt="HomeFlow logo" width="220">
 </p>
 
 HomeFlow is a private household finance application for recording monthly account balances, cash, income, receivables, payables, wealth adjustments, and annual savings goals.
@@ -301,7 +301,8 @@ homeflow/
 ├── data/
 │   └── homeflow.json          # Persistent financial store
 ├── public/
-│   └── homeflow-logo.png      # HomeFlow brand asset
+│   ├── homeflow-logo.png      # HomeFlow transparent brand asset
+│   └── homeflow-logo-bg.png   # HomeFlow logo with gray background
 ├── scripts/
 │   ├── generate-desktop-icons.cjs
 │   └── prepare-electron.cjs   # Copies static files into the standalone build

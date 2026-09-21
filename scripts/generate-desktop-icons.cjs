@@ -5,7 +5,7 @@ const path = require("node:path");
 
 const projectDirectory = path.resolve(__dirname, "..");
 const assetsDirectory = path.join(projectDirectory, "assets");
-const logoPath = path.join(projectDirectory, "public", "homeflow-logo.png");
+const logoPath = path.join(projectDirectory, "public", "homeflow-logo-bg.png");
 const temporaryDirectory = fs.mkdtempSync(
   path.join(os.tmpdir(), "homeflow-icons-"),
 );

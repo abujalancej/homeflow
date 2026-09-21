@@ -2493,6 +2493,33 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
     transform 150ms ease;
 }
 
+.sortable-row[draggable="true"] {
+  cursor: grab;
+}
+
+.sortable-row[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.sortable-row.is-dragging {
+  opacity: 0.48;
+}
+
+.sortable-row.is-drag-target:not(.is-dragging) {
+  border-color: rgba(103, 89, 232, 0.62);
+  box-shadow: 0 0 0 3px rgba(103, 89, 232, 0.12);
+}
+
+.sortable-row input,
+.sortable-row select,
+.sortable-row textarea {
+  cursor: text;
+}
+
+.sortable-row button {
+  cursor: pointer;
+}
+
 .data-row:hover {
   border-color: rgba(15, 111, 92, 0.22);
   background: #ffffff;

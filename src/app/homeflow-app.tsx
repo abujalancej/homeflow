@@ -45,6 +45,7 @@ import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   type ChangeEvent,
   type CSSProperties,
+  type DragEvent,
   type ReactNode,
   useMemo,
   useRef,
@@ -98,6 +99,14 @@ type RegisterDeleteTarget = {
   kind: RegisterDeleteKind;
   name: string;
 };
+type ReorderableMonthCollection =
+  | "accounts"
+  | "incomeEntries"
+  | "cashEntries"
+  | "receivables"
+  | "payables"
+  | "adjustments";
+type ReorderHandler = (draggedId: string, targetId: string) => void;
 type EvolutionRangeMode = "recent" | "custom" | "all";
 type EvolutionMetric = "netWorth" | "savings" | "income" | "spending";
 type Theme = "light" | "dark";
@@ -250,6 +259,66 @@ function cloneFutureCommitments(commitments: FutureCommitment[]) {
 
 function cloneStore(store: HomeflowStore) {
   return JSON.parse(JSON.stringify(store)) as HomeflowStore;
+}
+
+function reorderItems<T extends { id: string }>(
+  items: T[],
+  draggedId: string,
+  targetId: string,
+): T[] {
+  const draggedIndex = items.findIndex((item) => item.id === draggedId);
+  const targetIndex = items.findIndex((item) => item.id === targetId);
+
+  if (
+    draggedIndex < 0 ||
+    targetIndex < 0 ||
+    draggedIndex === targetIndex
+  ) {
+    return items;
+  }
+
+  const nextItems = [...items];
+  const [draggedItem] = nextItems.splice(draggedIndex, 1);
+
+  if (!draggedItem) return items;
+
+  nextItems.splice(targetIndex, 0, draggedItem);
+  return nextItems;
+}
+
+function startSortableDrag(event: DragEvent<HTMLElement>, id: string) {
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", id);
+  event.currentTarget.classList.add("is-dragging");
+}
+
+function endSortableDrag(event: DragEvent<HTMLElement>) {
+  event.currentTarget.classList.remove("is-dragging", "is-drag-target");
+}
+
+function allowSortableDrop(event: DragEvent<HTMLElement>) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+  event.currentTarget.classList.add("is-drag-target");
+}
+
+function leaveSortableDrop(event: DragEvent<HTMLElement>) {
+  event.currentTarget.classList.remove("is-drag-target");
+}
+
+function dropSortableItem(
+  event: DragEvent<HTMLElement>,
+  targetId: string,
+  onReorder: ReorderHandler,
+) {
+  event.preventDefault();
+  event.currentTarget.classList.remove("is-drag-target");
+
+  const draggedId = event.dataTransfer.getData("text/plain");
+
+  if (draggedId && draggedId !== targetId) {
+    onReorder(draggedId, targetId);
+  }
 }
 
 function readDemoStore(): HomeflowStore {
@@ -1517,6 +1586,23 @@ export default function HomeflowApp({
     setIsDirty(true);
   }
 
+  function reorderDraftCollection(
+    collection: ReorderableMonthCollection,
+    draggedId: string,
+    targetId: string,
+  ) {
+    updateDraft((current) => {
+      const items = current[collection] as Array<
+        AccountBalance | MoneyEntry | WealthAdjustment
+      >;
+      const reordered = reorderItems(items, draggedId, targetId);
+
+      return reordered === items
+        ? current
+        : ({ ...current, [collection]: reordered } as HomeflowMonth);
+    });
+  }
+
   function updateGoal(update: (current: AnnualGoal) => AnnualGoal) {
     setGoalDraft((current) =>
       update({ ...current, updatedAt: new Date().toISOString() }),
@@ -1556,6 +1642,14 @@ export default function HomeflowApp({
     setFutureCommitments((current) =>
       current.filter((commitment) => commitment.id !== id),
     );
+    setIsCommitmentsDirty(true);
+  }
+
+  function reorderFutureCommitments(draggedId: string, targetId: string) {
+    setFutureCommitments((current) => {
+      const reordered = reorderItems(current, draggedId, targetId);
+      return reordered === current ? current : reordered;
+    });
     setIsCommitmentsDirty(true);
   }
 
@@ -2113,6 +2207,40 @@ export default function HomeflowApp({
     }));
   }
 
+  function reorderGoalAllocations(draggedId: string, targetId: string) {
+    updateGoal((current) => {
+      const dragged = current.allocations.find(
+        (allocation) => allocation.id === draggedId,
+      );
+      const target = current.allocations.find(
+        (allocation) => allocation.id === targetId,
+      );
+
+      if (!dragged || !target || dragged.accumulates !== target.accumulates) {
+        return current;
+      }
+
+      const group = current.allocations.filter(
+        (allocation) => allocation.accumulates === dragged.accumulates,
+      );
+      const reorderedGroup = reorderItems(group, draggedId, targetId);
+      let groupIndex = 0;
+
+      return {
+        ...current,
+        allocations: current.allocations.map((allocation) => {
+          if (allocation.accumulates !== dragged.accumulates) {
+            return allocation;
+          }
+
+          const reorderedAllocation = reorderedGroup[groupIndex];
+          groupIndex += 1;
+          return reorderedAllocation ?? allocation;
+        }),
+      };
+    });
+  }
+
   const savingsTone =
     summary?.savings == null
       ? "neutral"
@@ -2654,6 +2782,7 @@ export default function HomeflowApp({
                 onCancel={() => syncGoalForYear(goalDraft.year)}
                 onEdit={() => setIsGoalEditing(true)}
                 onRemoveAllocation={removeAllocation}
+                onReorderAllocation={reorderGoalAllocations}
                 onSave={saveAnnualGoal}
                 onSelectGoalYear={selectGoalYear}
                 onUpdateAllocation={updateAllocation}
@@ -2806,6 +2935,9 @@ export default function HomeflowApp({
                         key={account.id}
                         onBalanceChange={updateAccountBalance}
                         onNameChange={updateAccountName}
+                        onReorder={(draggedId, targetId) =>
+                          reorderDraftCollection("accounts", draggedId, targetId)
+                        }
                         onRemove={(id) => requestDeleteItem("account", id)}
                       />
                     ))}
@@ -2818,6 +2950,9 @@ export default function HomeflowApp({
                   onAdd={addIncomeEntry}
                   onAmountChange={updateIncomeAmount}
                   onNameChange={updateIncomeName}
+                  onReorder={(draggedId, targetId) =>
+                    reorderDraftCollection("incomeEntries", draggedId, targetId)
+                  }
                   onRemove={(id) => requestDeleteItem("income", id)}
                   total={draft.income}
                 />
@@ -2828,6 +2963,9 @@ export default function HomeflowApp({
                   onAdd={addCashEntry}
                   onAmountChange={updateCashAmount}
                   onNameChange={updateCashName}
+                  onReorder={(draggedId, targetId) =>
+                    reorderDraftCollection("cashEntries", draggedId, targetId)
+                  }
                   onRemove={(id) => requestDeleteItem("cash", id)}
                   total={draft.cash}
                 />
@@ -2839,6 +2977,9 @@ export default function HomeflowApp({
                   onAdd={addEntry}
                   onAmountChange={updateEntryAmount}
                   onNameChange={updateEntryName}
+                  onReorder={(draggedId, targetId) =>
+                    reorderDraftCollection("receivables", draggedId, targetId)
+                  }
                   onRemove={(group, id) => requestDeleteItem(group, id)}
                   disabled={!canEditMonth}
                   title={t("Me deben")}
@@ -2852,6 +2993,9 @@ export default function HomeflowApp({
                   onAdd={addEntry}
                   onAmountChange={updateEntryAmount}
                   onNameChange={updateEntryName}
+                  onReorder={(draggedId, targetId) =>
+                    reorderDraftCollection("payables", draggedId, targetId)
+                  }
                   onRemove={(group, id) => requestDeleteItem(group, id)}
                   disabled={!canEditMonth}
                   title={t("Debo")}
@@ -2872,6 +3016,7 @@ export default function HomeflowApp({
                     updateFutureCommitment(id, { name })
                   }
                   onRemove={(id) => requestDeleteItem("commitment", id)}
+                  onReorder={reorderFutureCommitments}
                   onStatusChange={(id, status) =>
                     updateFutureCommitment(id, { status })
                   }
@@ -2889,6 +3034,9 @@ export default function HomeflowApp({
                   onAdd={addAdjustment}
                   onAmountChange={updateAdjustmentAmount}
                   onNameChange={updateAdjustmentName}
+                  onReorder={(draggedId, targetId) =>
+                    reorderDraftCollection("adjustments", draggedId, targetId)
+                  }
                   onRemove={(id) => requestDeleteItem("adjustment", id)}
                   total={summary.adjustmentTotal}
                 />
@@ -3840,6 +3988,7 @@ function AnnualGoalPanel({
   onCancel,
   onEdit,
   onRemoveAllocation,
+  onReorderAllocation,
   onSave,
   onSelectGoalYear,
   onUpdateAllocation,
@@ -3856,6 +4005,7 @@ function AnnualGoalPanel({
   onCancel: () => void;
   onEdit: () => void;
   onRemoveAllocation: (id: string) => void;
+  onReorderAllocation: ReorderHandler;
   onSave: () => void;
   onSelectGoalYear: (year: number) => void;
   onUpdateAllocation: (
@@ -3893,7 +4043,13 @@ function AnnualGoalPanel({
 
   function renderAllocation(allocation: AnnualGoalAllocation) {
     return (
-      <div className="allocation-row" key={allocation.id}>
+      <SortableRow
+        className="allocation-row"
+        disabled={!isEditing || !canEdit}
+        id={allocation.id}
+        key={allocation.id}
+        onReorder={onReorderAllocation}
+      >
         <span className="row-icon" aria-hidden="true">
           <AppIcon
             icon={allocation.accumulates ? faPiggyBank : faMoneyBills}
@@ -3932,7 +4088,7 @@ function AnnualGoalPanel({
         >
           <AppIcon icon={faTrash} size={14} />
         </button>
-      </div>
+      </SortableRow>
     );
   }
 
@@ -4117,23 +4273,59 @@ function AnnualGoalPanel({
   );
 }
 
+function SortableRow({
+  children,
+  className,
+  disabled,
+  id,
+  onReorder,
+}: {
+  children: ReactNode;
+  className: string;
+  disabled: boolean;
+  id: string;
+  onReorder: ReorderHandler;
+}) {
+  return (
+    <div
+      className={`${className} sortable-row`}
+      draggable={!disabled}
+      onDragEnd={endSortableDrag}
+      onDragEnter={allowSortableDrop}
+      onDragLeave={leaveSortableDrop}
+      onDragOver={allowSortableDrop}
+      onDragStart={(event) => startSortableDrag(event, id)}
+      onDrop={(event) => dropSortableItem(event, id, onReorder)}
+    >
+      {children}
+    </div>
+  );
+}
+
 function AccountRow({
   account,
   disabled,
   onBalanceChange,
   onNameChange,
+  onReorder,
   onRemove,
 }: {
   account: AccountBalance;
   disabled: boolean;
   onBalanceChange: (id: string, balance: number) => void;
   onNameChange: (id: string, name: string) => void;
+  onReorder: ReorderHandler;
   onRemove: (id: string) => void;
 }) {
   const { t } = useI18n();
 
   return (
-    <div className="data-row">
+    <SortableRow
+      className="data-row"
+      disabled={disabled}
+      id={account.id}
+      onReorder={onReorder}
+    >
       <span className="row-icon" aria-hidden="true">
         <AppIcon icon={faLandmark} size={15} />
       </span>
@@ -4164,7 +4356,7 @@ function AccountRow({
       >
         <AppIcon icon={faTrash} size={14} />
       </button>
-    </div>
+    </SortableRow>
   );
 }
 
@@ -4174,6 +4366,7 @@ function IncomePanel({
   onAdd,
   onAmountChange,
   onNameChange,
+  onReorder,
   onRemove,
   total,
 }: {
@@ -4182,6 +4375,7 @@ function IncomePanel({
   onAdd: () => void;
   onAmountChange: (id: string, amount: number) => void;
   onNameChange: (id: string, name: string) => void;
+  onReorder: ReorderHandler;
   onRemove: (id: string) => void;
   total: number;
 }) {
@@ -4215,7 +4409,13 @@ function IncomePanel({
         )}
 
         {entries.map((entry) => (
-          <div className="data-row" key={entry.id}>
+          <SortableRow
+            className="data-row"
+            disabled={disabled}
+            id={entry.id}
+            key={entry.id}
+            onReorder={onReorder}
+          >
             <span className="row-icon" aria-hidden="true">
               <AppIcon icon={faArrowUp} size={15} />
             </span>
@@ -4246,7 +4446,7 @@ function IncomePanel({
             >
               <AppIcon icon={faTrash} size={14} />
             </button>
-          </div>
+          </SortableRow>
         ))}
       </div>
     </section>
@@ -4259,6 +4459,7 @@ function CashPanel({
   onAdd,
   onAmountChange,
   onNameChange,
+  onReorder,
   onRemove,
   total,
 }: {
@@ -4267,6 +4468,7 @@ function CashPanel({
   onAdd: () => void;
   onAmountChange: (id: string, amount: number) => void;
   onNameChange: (id: string, name: string) => void;
+  onReorder: ReorderHandler;
   onRemove: (id: string) => void;
   total: number;
 }) {
@@ -4300,7 +4502,13 @@ function CashPanel({
         )}
 
         {entries.map((entry) => (
-          <div className="data-row" key={entry.id}>
+          <SortableRow
+            className="data-row"
+            disabled={disabled}
+            id={entry.id}
+            key={entry.id}
+            onReorder={onReorder}
+          >
             <span className="row-icon" aria-hidden="true">
               <AppIcon icon={faMoneyBills} size={15} />
             </span>
@@ -4331,7 +4539,7 @@ function CashPanel({
             >
               <AppIcon icon={faTrash} size={14} />
             </button>
-          </div>
+          </SortableRow>
         ))}
       </div>
     </section>
@@ -4344,6 +4552,7 @@ function AdjustmentPanel({
   onAdd,
   onAmountChange,
   onNameChange,
+  onReorder,
   onRemove,
   total,
 }: {
@@ -4352,6 +4561,7 @@ function AdjustmentPanel({
   onAdd: () => void;
   onAmountChange: (id: string, amount: number) => void;
   onNameChange: (id: string, name: string) => void;
+  onReorder: ReorderHandler;
   onRemove: (id: string) => void;
   total: number;
 }) {
@@ -4389,7 +4599,13 @@ function AdjustmentPanel({
         )}
 
         {adjustments.map((adjustment) => (
-          <div className="data-row" key={adjustment.id}>
+          <SortableRow
+            className="data-row"
+            disabled={disabled}
+            id={adjustment.id}
+            key={adjustment.id}
+            onReorder={onReorder}
+          >
             <span className="row-icon" aria-hidden="true">
               <AppIcon icon={faScaleBalanced} size={15} />
             </span>
@@ -4420,7 +4636,7 @@ function AdjustmentPanel({
             >
               <AppIcon icon={faTrash} size={14} />
             </button>
-          </div>
+          </SortableRow>
         ))}
       </div>
     </section>
@@ -4435,6 +4651,7 @@ function DebtPanel({
   onAdd,
   onAmountChange,
   onNameChange,
+  onReorder,
   onRemove,
   title,
   total,
@@ -4446,6 +4663,7 @@ function DebtPanel({
   onAdd: (group: EntryGroup) => void;
   onAmountChange: (group: EntryGroup, id: string, amount: number) => void;
   onNameChange: (group: EntryGroup, id: string, name: string) => void;
+  onReorder: ReorderHandler;
   onRemove: (group: EntryGroup, id: string) => void;
   title: string;
   total: number;
@@ -4486,7 +4704,13 @@ function DebtPanel({
         )}
 
         {entries.map((entry) => (
-          <div className="data-row" key={entry.id}>
+          <SortableRow
+            className="data-row"
+            disabled={disabled}
+            id={entry.id}
+            key={entry.id}
+            onReorder={onReorder}
+          >
             <span className="row-icon" aria-hidden="true">
               {icon}
             </span>
@@ -4517,7 +4741,7 @@ function DebtPanel({
             >
               <AppIcon icon={faTrash} size={14} />
             </button>
-          </div>
+          </SortableRow>
         ))}
       </div>
     </section>
@@ -4533,6 +4757,7 @@ function FutureCommitmentsPanel({
   onConvert,
   onNameChange,
   onRemove,
+  onReorder,
   onStatusChange,
   onTargetMonthChange,
   total,
@@ -4546,6 +4771,7 @@ function FutureCommitmentsPanel({
   onConvert: (id: string) => void;
   onNameChange: (id: string, name: string) => void;
   onRemove: (id: string) => void;
+  onReorder: ReorderHandler;
   onStatusChange: (id: string, status: FutureCommitmentStatus) => void;
   onTargetMonthChange: (id: string, targetMonth: string) => void;
   total: number;
@@ -4599,7 +4825,13 @@ function FutureCommitmentsPanel({
         )}
 
         {commitments.map((commitment) => (
-          <div className="commitment-row" key={commitment.id}>
+          <SortableRow
+            className="commitment-row"
+            disabled={disabled}
+            id={commitment.id}
+            key={commitment.id}
+            onReorder={onReorder}
+          >
             <span className="row-icon" aria-hidden="true">
               <AppIcon icon={faClock} size={15} />
             </span>
@@ -4694,7 +4926,7 @@ function FutureCommitmentsPanel({
             >
               <AppIcon icon={faTrash} size={14} />
             </button>
-          </div>
+          </SortableRow>
         ))}
       </div>
     </section>

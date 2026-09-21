@@ -1074,12 +1074,15 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
 .money-input-wrap::after {
   position: absolute;
   top: 50%;
-  right: 14px;
+  right: 12px;
+  width: 16px;
   transform: translateY(-50%);
   color: var(--muted);
   content: "€";
   font-size: 13px;
   font-weight: 700;
+  line-height: 1;
+  text-align: center;
   pointer-events: none;
 }
 
@@ -1091,7 +1094,7 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
   height: 100%;
   border: 0;
   background: transparent;
-  padding-right: 40px;
+  padding-right: 48px;
   text-align: right;
 }
 
@@ -2401,7 +2404,7 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
 }
 
 .allocation-row .money-input-wrap input {
-  padding-right: 40px;
+  padding-right: 48px;
   font-size: var(--text-body);
   font-weight: 600;
   text-align: right;
@@ -2663,7 +2666,7 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
   height: 100%;
   border: 0;
   background: transparent;
-  padding-right: 40px;
+  padding-right: 48px;
   text-align: right;
 }
 
@@ -2710,13 +2713,13 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
 .data-row .amount-input {
   height: 100%;
   color: var(--ink);
-  padding-right: 38px;
+  padding-right: 48px;
   text-align: right;
 }
 
 .money-field input {
   height: 100%;
-  padding: 0 30px 0 12px;
+  padding: 0 48px 0 12px;
   font-size: 17px;
   font-weight: 700;
   text-align: right;

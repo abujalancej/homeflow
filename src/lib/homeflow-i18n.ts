@@ -239,6 +239,13 @@ const translations: Record<Language, Record<string, string>> = {
     "Tras compromisos {year}: {value}":
       "Després dels compromisos de {year}: {value}",
     "Análisis del mes": "Anàlisi del mes",
+    "Comparación histórica": "Comparació històrica",
+    "1 cierre anterior de {month}": "1 tancament anterior de {month}",
+    "{count} cierres anteriores de {month}": "{count} tancaments anteriors de {month}",
+    "Media histórica": "Mitjana històrica",
+    "Por encima de la media": "Per sobre de la mitjana",
+    "Por debajo de la media": "Per sota de la mitjana",
+    "Cerca de la media": "A prop de la mitjana",
     "Sin notas introducidas.": "No s'han introduït notes.",
     "Lo que te deben menos lo que debes.":
       "El que et deuen menys el que deus.",
@@ -554,6 +561,13 @@ const translations: Record<Language, Record<string, string>> = {
     "Tras compromisos {year}: {value}":
       "After {year} commitments: {value}",
     "Análisis del mes": "Monthly analysis",
+    "Comparación histórica": "Historical comparison",
+    "1 cierre anterior de {month}": "1 previous {month} closing",
+    "{count} cierres anteriores de {month}": "{count} previous {month} closings",
+    "Media histórica": "Historical average",
+    "Por encima de la media": "Above average",
+    "Por debajo de la media": "Below average",
+    "Cerca de la media": "Close to average",
     "Sin notas introducidas.": "No notes entered.",
     "Lo que te deben menos lo que debes.":
       "What you are owed minus what you owe.",

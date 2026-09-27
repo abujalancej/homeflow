@@ -1791,6 +1791,103 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
   line-height: 1.55;
 }
 
+.analysis-historical {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(103, 89, 232, 0.24);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 0, rgba(19, 168, 158, 0.11), transparent 32%),
+    linear-gradient(135deg, rgba(244, 242, 255, 0.96), rgba(238, 249, 248, 0.9));
+}
+
+.analysis-historical-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.analysis-historical-heading > div {
+  display: grid;
+  gap: 3px;
+}
+
+.analysis-historical-heading > div > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.analysis-historical-heading p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.analysis-historical-heading .app-icon {
+  color: var(--brand);
+}
+
+.analysis-historical-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 10px;
+}
+
+.analysis-historical-card {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid rgba(159, 160, 204, 0.28);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.analysis-historical-card > span,
+.analysis-historical-card small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.analysis-historical-card > strong {
+  color: var(--ink);
+  font-size: 21px;
+  font-weight: 730;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.analysis-historical-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.analysis-historical-status em {
+  margin-left: auto;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.analysis-historical-card.is-below .analysis-historical-status {
+  color: var(--amber);
+}
+
+.analysis-historical-card.is-close .analysis-historical-status {
+  color: var(--blue);
+}
+
 .analysis-groups {
   position: relative;
   display: grid;
@@ -4216,6 +4313,18 @@ html[data-theme="dark"] .forecast-base-strip {
   background:
     radial-gradient(circle at 0 0, rgba(154, 140, 255, 0.13), transparent 36%),
     linear-gradient(135deg, rgba(29, 31, 56, 0.96), rgba(17, 39, 43, 0.88));
+}
+
+html[data-theme="dark"] .analysis-historical {
+  border-color: rgba(123, 115, 211, 0.4);
+  background:
+    radial-gradient(circle at 100% 0, rgba(46, 181, 168, 0.12), transparent 34%),
+    linear-gradient(135deg, rgba(35, 33, 67, 0.96), rgba(19, 43, 49, 0.9));
+}
+
+html[data-theme="dark"] .analysis-historical-card {
+  border-color: rgba(108, 113, 163, 0.42);
+  background: rgba(20, 25, 44, 0.72);
 }
 
 html[data-theme="dark"] .range-mode {

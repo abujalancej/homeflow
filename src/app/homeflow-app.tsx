@@ -140,8 +140,21 @@ type ForecastModel = {
     estimatedTotal: ForecastStats;
   } | null;
 };
+type HistoricalComparisonStatus = "above" | "below" | "close";
+type HistoricalComparisonMetric = {
+  average: number;
+  current: number;
+  difference: number;
+  id: "income" | "spending" | "savings" | "savingRate";
+  samples: number;
+  status: HistoricalComparisonStatus;
+};
+type HistoricalComparison = {
+  metrics: HistoricalComparisonMetric[];
+  samples: number;
+};
 
-const APP_VERSION = "1.0.1";
+const APP_VERSION = "1.1.0";
 const ACTIVE_MONTH_KEY = "homeflow.activeMonth";
 const DATA_MODE_KEY = "homeflow.dataMode";
 const CURRENCY_KEY = "homeflow.currency";
@@ -618,6 +631,79 @@ function formatSavingRate(value: number | null, locale = "es-ES") {
 function getSavingsClass(value: number | null) {
   if (value === null || Math.round(value) === 0) return "is-neutral";
   return value > 0 ? "is-positive" : "is-negative";
+}
+
+function getHistoricalComparisonStatus(
+  current: number,
+  average: number,
+): HistoricalComparisonStatus {
+  const tolerance = Math.max(1, Math.abs(average) * 0.05);
+
+  if (Math.abs(current - average) <= tolerance) return "close";
+  return current > average ? "above" : "below";
+}
+
+function buildHistoricalComparison(
+  month: HomeflowMonth,
+  summary: MonthSummary,
+  history: HistoryPoint[],
+): HistoricalComparison | null {
+  const sameMonthHistory = history.filter(
+    (point) =>
+      point.month.month < month.month &&
+      point.month.month.slice(5) === month.month.slice(5),
+  );
+
+  if (sameMonthHistory.length === 0) return null;
+
+  const metrics: {
+    current: number | null;
+    id: HistoricalComparisonMetric["id"];
+    values: (point: HistoryPoint) => number | null;
+  }[] = [
+    { current: month.income, id: "income", values: (point) => point.month.income },
+    {
+      current: summary.estimatedSpending,
+      id: "spending",
+      values: (point) => point.summary.estimatedSpending,
+    },
+    {
+      current: summary.savings,
+      id: "savings",
+      values: (point) => point.summary.savings,
+    },
+    {
+      current: summary.savingRate,
+      id: "savingRate",
+      values: (point) => point.summary.savingRate,
+    },
+  ];
+
+  const comparisons = metrics.flatMap((metric) => {
+    if (metric.current === null) return [];
+
+    const values = sameMonthHistory
+      .map(metric.values)
+      .filter((value): value is number => value !== null);
+
+    if (values.length === 0) return [];
+
+    const average = values.reduce((total, value) => total + value, 0) / values.length;
+    const difference = metric.current - average;
+
+    return [{
+      average,
+      current: metric.current,
+      difference,
+      id: metric.id,
+      samples: values.length,
+      status: getHistoricalComparisonStatus(metric.current, average),
+    }];
+  });
+
+  return comparisons.length > 0
+    ? { metrics: comparisons, samples: sameMonthHistory.length }
+    : null;
 }
 
 function getNiceChartStep(value: number) {
@@ -2763,6 +2849,7 @@ export default function HomeflowApp({
             {view === "analysis" && (
               <MonthAnalysisPanel
                 futureCommitments={futureCommitments}
+                history={history}
                 month={draft}
                 previousMonth={previousMonth}
                 summary={summary}
@@ -3644,11 +3731,13 @@ function ForecastPanel({
 
 function MonthAnalysisPanel({
   futureCommitments,
+  history,
   month,
   previousMonth,
   summary,
 }: {
   futureCommitments: FutureCommitment[];
+  history: HistoryPoint[];
   month: HomeflowMonth;
   previousMonth: HomeflowMonth | null;
   summary: MonthSummary;
@@ -3678,6 +3767,23 @@ function MonthAnalysisPanel({
   const notes = month.notes?.trim();
   const pendingTone =
     pendingBalance === 0 ? "is-neutral" : pendingBalance > 0 ? "is-positive" : "is-negative";
+  const historicalComparison = buildHistoricalComparison(month, summary, history);
+  const historicalSampleLabel = historicalComparison
+    ? historicalComparison.samples === 1
+      ? t("1 cierre anterior de {month}", {
+          month: formatShortMonthName(month.month, locale),
+        })
+      : t("{count} cierres anteriores de {month}", {
+          count: historicalComparison.samples,
+          month: formatShortMonthName(month.month, locale),
+        })
+    : null;
+  const historicalMetricLabels: Record<HistoricalComparisonMetric["id"], string> = {
+    income: t("Ingresos"),
+    savingRate: t("Ahorro sobre ingresos"),
+    savings: t("Ahorro operativo"),
+    spending: t("Gasto estimado"),
+  };
 
   return (
     <section className="zone-panel analysis-panel" aria-label={t("Análisis del mes")}>
@@ -3688,6 +3794,64 @@ function MonthAnalysisPanel({
         </div>
         <p>{notes || t("Sin notas introducidas.")}</p>
       </div>
+
+      {historicalComparison && historicalSampleLabel && (
+        <section
+          className="analysis-historical"
+          aria-label={t("Comparación histórica")}
+        >
+          <header className="analysis-historical-heading">
+            <div>
+              <span>{t("Comparación histórica")}</span>
+              <p>{historicalSampleLabel}</p>
+            </div>
+            <AppIcon icon={faCalendarDays} size={17} />
+          </header>
+          <div className="analysis-historical-grid">
+            {historicalComparison.metrics.map((metric) => {
+              const isRate = metric.id === "savingRate";
+              const formatValue = (value: number) =>
+                isRate
+                  ? formatSavingRate(value, locale)
+                  : formatCurrency(value, locale, currency);
+              const formatDifference = (value: number) =>
+                isRate
+                  ? `${value > 0 ? "+" : ""}${Math.round(value * 100)} pp`
+                  : formatSignedCurrency(value, locale, currency);
+              const statusLabel =
+                metric.status === "above"
+                  ? t("Por encima de la media")
+                  : metric.status === "below"
+                    ? t("Por debajo de la media")
+                    : t("Cerca de la media");
+              const statusIcon =
+                metric.status === "above"
+                  ? faArrowUp
+                  : metric.status === "below"
+                    ? faArrowDown
+                    : faEquals;
+
+              return (
+                <article
+                  className={`analysis-historical-card is-${metric.status}`}
+                  key={metric.id}
+                >
+                  <span>{historicalMetricLabels[metric.id]}</span>
+                  <strong>{formatValue(metric.current)}</strong>
+                  <small>
+                    {t("Media histórica")}: {formatValue(metric.average)}
+                  </small>
+                  <div className="analysis-historical-status">
+                    <AppIcon icon={statusIcon} size={12} />
+                    <span>{statusLabel}</span>
+                    <em>{formatDifference(metric.difference)}</em>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <div className="analysis-groups">
         <AnalysisGroup title={t("Patrimonio")} columns={2} icon={faWallet}>

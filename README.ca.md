@@ -3,7 +3,7 @@
 [English](README.md) · [Español](README.es.md) · **Català**
 
 <p align="center">
-  <img src="public/homeflow-logo-bg.png" alt="Logo de HomeFlow" width="220">
+  <img src="public/homeflow-logo-rounded.png" alt="Logo de HomeFlow" width="220">
 </p>
 
 HomeFlow és una aplicació privada de finances domèstiques per registrar mensualment saldos de comptes, efectiu, ingressos, cobraments pendents, pagaments pendents, ajustos patrimonials i objectius anuals d'estalvi.
@@ -303,6 +303,7 @@ homeflow/
 ├── public/
 │   ├── homeflow-logo.png      # Recurs de marca transparent de HomeFlow
 │   └── homeflow-logo-bg.png   # Logo de HomeFlow amb fons gris
+│   └── homeflow-logo-rounded.png # Icona de HomeFlow amb cantonades arrodonides
 ├── scripts/
 │   ├── generate-desktop-icons.cjs
 │   └── prepare-electron.cjs   # Copia els recursos estàtics a la compilació independent

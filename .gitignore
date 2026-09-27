@@ -7,6 +7,9 @@
 # Electron Forge output
 /out/
 
+# Electron Builder output
+/release/
+
 # Local financial data
 /data/
 

@@ -112,6 +112,14 @@ npm run desktop:make
 
 Electron Forge writes generated applications and installers to `out/`. The configured targets are DMG and ZIP on macOS, Squirrel and ZIP on Windows, and DEB, RPM, and ZIP on Linux. Packaging another operating system normally requires building on that operating system. Code signing and notarisation are not configured yet.
 
+To create a Windows x64 `.exe` installer directly from macOS, run:
+
+```bash
+npm run desktop:make:win
+```
+
+This uses electron-builder's Wine compatibility tooling and writes the installer to `release/`. On Apple Silicon, Rosetta must be available. Test the generated installer on Windows before distribution; it is not code-signed.
+
 The installed application starts the Next.js standalone server internally on an available loopback port. Its renderer uses context isolation, process sandboxing, no Node.js integration, denied permission requests, and restricted navigation. No external server is required.
 
 ## Usage
@@ -354,6 +362,7 @@ Each page route renders the shared client application with a different view. Dat
 | `npm run desktop:build` | Create and prepare the Next.js standalone build used by Electron. |
 | `npm run desktop:package` | Create an unpacked Electron application for the current platform. |
 | `npm run desktop:make` | Create installers or distributable archives for the current platform. |
+| `npm run desktop:make:win` | Create a Windows x64 `.exe` installer from macOS. |
 
 ## Validation
 

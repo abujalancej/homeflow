@@ -1,0 +1,28 @@
+appId: com.abujalancej.homeflow
+productName: HomeFlow
+asar: true
+directories:
+  output: release
+files:
+  - electron/**
+  - package.json
+  - '!data{,/**}'
+  - '!out{,/**}'
+  - '!release{,/**}'
+  - '!scripts{,/**}'
+  - '!src{,/**}'
+  - '!public{,/**}'
+extraResources:
+  - from: .next/standalone
+    to: standalone
+  - from: public/homeflow-logo.png
+    to: homeflow-logo.png
+win:
+  icon: assets/homeflow.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

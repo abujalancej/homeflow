@@ -112,6 +112,14 @@ npm run desktop:make
 
 Electron Forge desa les aplicacions i els instal·ladors generats a `out/`. Els formats configurats són DMG i ZIP a macOS, Squirrel i ZIP a Windows, i DEB, RPM i ZIP a Linux. Per empaquetar un altre sistema operatiu, normalment cal compilar en aquell mateix sistema. La signatura de codi i la notarització encara no estan configurades.
 
+Per crear directament des de macOS un instal·lador `.exe` de Windows x64, executa:
+
+```bash
+npm run desktop:make:win
+```
+
+Utilitza les eines de compatibilitat Wine d'electron-builder i desa l'instal·lador a `release/`. A Apple Silicon cal tenir Rosetta disponible. Prova l'instal·lador generat a Windows abans de distribuir-lo; no està signat.
+
 L'aplicació instal·lada inicia internament el servidor independent de Next.js en un port de bucle local disponible. El renderitzador utilitza aïllament de context, sandbox de processos, integració amb Node.js desactivada, sol·licituds de permisos denegades i navegació restringida. No necessita cap servidor extern.
 
 ## Ús
@@ -354,6 +362,7 @@ Cada ruta de pàgina renderitza l'aplicació client compartida amb una vista dif
 | `npm run desktop:build` | Crea i prepara la compilació independent de Next.js que utilitza Electron. |
 | `npm run desktop:package` | Crea una aplicació Electron sense instal·lador per a la plataforma actual. |
 | `npm run desktop:make` | Crea instal·ladors o fitxers distribuïbles per a la plataforma actual. |
+| `npm run desktop:make:win` | Crea un instal·lador `.exe` de Windows x64 des de macOS. |
 
 ## Validació
 

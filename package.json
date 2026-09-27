@@ -23,7 +23,8 @@
     "desktop:icons": "node scripts/generate-desktop-icons.cjs",
     "desktop:build": "npm run build && node scripts/prepare-electron.cjs",
     "desktop:package": "npm run desktop:build && electron-forge package",
-    "desktop:make": "npm run desktop:build && electron-forge make"
+    "desktop:make": "npm run desktop:build && electron-forge make",
+    "desktop:make:win": "npm run desktop:build && electron-builder --win --x64"
   },
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^7.3.1",
@@ -46,6 +47,7 @@
     "@types/react-dom": "^19",
     "concurrently": "^10.0.5",
     "electron": "^44.0.0",
+    "electron-builder": "^26.15.3",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "tailwindcss": "^4",

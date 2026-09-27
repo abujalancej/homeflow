@@ -154,7 +154,7 @@ type HistoricalComparison = {
   samples: number;
 };
 
-const APP_VERSION = "1.1.0";
+const APP_VERSION = "1.1.1";
 const ACTIVE_MONTH_KEY = "homeflow.activeMonth";
 const DATA_MODE_KEY = "homeflow.dataMode";
 const CURRENCY_KEY = "homeflow.currency";

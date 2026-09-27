@@ -1755,11 +1755,15 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
 
 .analysis-note {
   display: grid;
+  grid-column: 1 / -1;
   gap: 8px;
+  width: 100%;
   padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--brand-soft) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border: 1px solid rgba(103, 89, 232, 0.24);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 0, rgba(19, 168, 158, 0.11), transparent 32%),
+    linear-gradient(135deg, rgba(244, 242, 255, 0.96), rgba(238, 249, 248, 0.9));
 }
 
 .analysis-note span {
@@ -1783,7 +1787,16 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
   color: var(--ink);
 }
 
-.analysis-note p {
+.analysis-note-content {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid rgba(211, 216, 233, 0.92);
+  border-radius: 9px;
+  background: var(--panel);
+  box-shadow: 0 8px 20px rgba(37, 43, 92, 0.08);
+}
+
+.analysis-note-content p {
   max-width: 900px;
   margin: 0;
   color: var(--ink);
@@ -1793,8 +1806,8 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
 
 .analysis-historical {
   display: grid;
-  gap: 14px;
-  padding: 16px;
+  gap: 10px;
+  padding: 14px;
   border: 1px solid rgba(103, 89, 232, 0.24);
   border-radius: 14px;
   background:
@@ -1804,14 +1817,16 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
 
 .analysis-historical-heading {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
 .analysis-historical-heading > div {
-  display: grid;
-  gap: 3px;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
 
 .analysis-historical-heading > div > span {
@@ -1824,13 +1839,13 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
 
 .analysis-historical-heading p {
   margin: 0;
-  color: var(--ink);
-  font-size: 14px;
+  color: var(--muted);
+  font-size: 13px;
   font-weight: 600;
 }
 
 .analysis-historical-heading .app-icon {
-  color: var(--brand);
+  color: var(--ink);
 }
 
 .analysis-historical-grid {
@@ -1841,9 +1856,9 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
 
 .analysis-historical-card {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
-  padding: 13px;
+  padding: 12px;
   border: 1px solid rgba(159, 160, 204, 0.28);
   border-radius: 11px;
   background: rgba(255, 255, 255, 0.78);
@@ -1858,20 +1873,30 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
 
 .analysis-historical-card > strong {
   color: var(--ink);
-  font-size: 21px;
+  font-size: clamp(20px, 1.55vw, 26px);
   font-weight: 730;
   letter-spacing: -0.025em;
   line-height: 1.1;
 }
 
 .analysis-historical-status {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 5px;
-  margin-top: 3px;
-  color: var(--brand);
+  margin-top: 4px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  color: var(--green);
   font-size: 12px;
   font-weight: 700;
+}
+
+.analysis-historical-status > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .analysis-historical-status em {
@@ -1881,11 +1906,19 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
 }
 
 .analysis-historical-card.is-below .analysis-historical-status {
-  color: var(--amber);
+  color: var(--red);
 }
 
 .analysis-historical-card.is-close .analysis-historical-status {
-  color: var(--blue);
+  color: var(--amber);
+}
+
+@media (max-width: 680px) {
+  .analysis-historical-heading > div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1px;
+  }
 }
 
 .analysis-groups {
@@ -3745,7 +3778,6 @@ html[data-theme="light"] .theme-switch button[data-theme-option="light"] {
 
 .evolution-toolbar,
 .forecast-summary-panel,
-.analysis-note,
 .export-controls {
   border-color: rgba(211, 216, 233, 0.84);
   background:
@@ -4306,7 +4338,6 @@ html[data-theme="dark"] .metric-card:hover {
 
 html[data-theme="dark"] .evolution-toolbar,
 html[data-theme="dark"] .forecast-summary-panel,
-html[data-theme="dark"] .analysis-note,
 html[data-theme="dark"] .export-controls,
 html[data-theme="dark"] .forecast-base-strip {
   border-color: rgba(92, 101, 145, 0.4);
@@ -4315,6 +4346,17 @@ html[data-theme="dark"] .forecast-base-strip {
     linear-gradient(135deg, rgba(29, 31, 56, 0.96), rgba(17, 39, 43, 0.88));
 }
 
+html[data-theme="dark"] .analysis-note {
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .analysis-note-content {
+  border-color: rgba(78, 85, 115, 0.58);
+  background: rgba(20, 25, 44, 0.88);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+html[data-theme="dark"] .analysis-note,
 html[data-theme="dark"] .analysis-historical {
   border-color: rgba(123, 115, 211, 0.4);
   background:

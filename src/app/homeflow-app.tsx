@@ -3787,13 +3787,15 @@ function MonthAnalysisPanel({
 
   return (
     <section className="zone-panel analysis-panel" aria-label={t("Análisis del mes")}>
-      <div className="analysis-note">
+      <section className="analysis-note" aria-label={t("Notas del mes")}>
         <div className="analysis-note-heading">
           <span>{t("Notas del mes")}</span>
           <AppIcon icon={faNoteSticky} size={16} />
         </div>
-        <p>{notes || t("Sin notas introducidas.")}</p>
-      </div>
+        <div className="analysis-note-content">
+          <p>{notes || t("Sin notas introducidas.")}</p>
+        </div>
+      </section>
 
       {historicalComparison && historicalSampleLabel && (
         <section
@@ -3820,10 +3822,10 @@ function MonthAnalysisPanel({
                   : formatSignedCurrency(value, locale, currency);
               const statusLabel =
                 metric.status === "above"
-                  ? t("Por encima de la media")
+                  ? t("Por encima")
                   : metric.status === "below"
-                    ? t("Por debajo de la media")
-                    : t("Cerca de la media");
+                    ? t("Por debajo")
+                    : t("Cerca");
               const statusIcon =
                 metric.status === "above"
                   ? faArrowUp
@@ -3839,7 +3841,7 @@ function MonthAnalysisPanel({
                   <span>{historicalMetricLabels[metric.id]}</span>
                   <strong>{formatValue(metric.current)}</strong>
                   <small>
-                    {t("Media histórica")}: {formatValue(metric.average)}
+                    {t("Media")}: {formatValue(metric.average)}
                   </small>
                   <div className="analysis-historical-status">
                     <AppIcon icon={statusIcon} size={12} />

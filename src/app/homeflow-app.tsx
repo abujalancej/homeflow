@@ -2427,7 +2427,7 @@ export default function HomeflowApp({
         <div className="rail-brand">
           <span className="brand-mark" aria-hidden="true">
             <Image
-              src="/homeflow-logo-bg.png"
+              src="/homeflow-logo.png"
               alt=""
               width={52}
               height={52}

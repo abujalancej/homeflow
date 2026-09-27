@@ -16,6 +16,7 @@ const eslintConfig = defineConfig([
     // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
+    // Kept ignored while artifacts made with the previous Windows build remain locally.
     "release/**",
     "build/**",
     "next-env.d.ts",

@@ -4,10 +4,10 @@
 # Next.js build output
 /.next/
 
-# Electron Forge output
+# Desktop packaging output
 /out/
 
-# Electron Builder output
+# Legacy Electron Builder output
 /release/
 
 # Local financial data

@@ -110,7 +110,7 @@ npm run desktop:package
 npm run desktop:make
 ```
 
-Electron Forge desa les aplicacions i els instal·ladors generats a `out/`. Els formats configurats són DMG i ZIP a macOS, Squirrel i ZIP a Windows, i DEB, RPM i ZIP a Linux. Per empaquetar un altre sistema operatiu, normalment cal compilar en aquell mateix sistema. La signatura de codi i la notarització encara no estan configurades.
+Els artefactes d'escriptori s'agrupen a `out/` per plataforma: `out/mac/` per a macOS, `out/win/` per a Windows i `out/linux/` per a Linux. Els fitxers DMG, EXE i ZIP usen `HomeFlow-<version>-<os>-<arch>.<ext>`. Electron Forge genera els artefactes DMG i ZIP de macOS a `out/mac/`. Per empaquetar un altre sistema operatiu, normalment cal compilar en aquell mateix sistema. La signatura de codi i la notarització encara no estan configurades.
 
 Per crear directament des de macOS un instal·lador `.exe` de Windows x64, executa:
 
@@ -118,7 +118,7 @@ Per crear directament des de macOS un instal·lador `.exe` de Windows x64, execu
 npm run desktop:make:win
 ```
 
-Utilitza les eines de compatibilitat Wine d'electron-builder i desa l'instal·lador a `release/`. A Apple Silicon cal tenir Rosetta disponible. Prova l'instal·lador generat a Windows abans de distribuir-lo; no està signat.
+Utilitza les eines de compatibilitat Wine d'electron-builder i desa l'instal·lador i l'aplicació desempaquetada a `out/win/`. A Apple Silicon cal tenir Rosetta disponible. Prova l'instal·lador generat a Windows abans de distribuir-lo; no està signat.
 
 L'aplicació instal·lada inicia internament el servidor independent de Next.js en un port de bucle local disponible. El renderitzador utilitza aïllament de context, sandbox de processos, integració amb Node.js desactivada, sol·licituds de permisos denegades i navegació restringida. No necessita cap servidor extern.
 

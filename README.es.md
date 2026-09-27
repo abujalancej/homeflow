@@ -110,7 +110,7 @@ npm run desktop:package
 npm run desktop:make
 ```
 
-Electron Forge guarda las aplicaciones y los instaladores generados en `out/`. Los destinos configurados son DMG y ZIP en macOS, Squirrel y ZIP en Windows, y DEB, RPM y ZIP en Linux. Para empaquetar otro sistema operativo normalmente hay que compilar en ese mismo sistema. La firma de código y la notarización todavía no están configuradas.
+Los artefactos de escritorio se agrupan en `out/` por plataforma: `out/mac/` para macOS, `out/win/` para Windows y `out/linux/` para Linux. Los archivos DMG, EXE y ZIP usan `HomeFlow-<version>-<os>-<arch>.<ext>`. Electron Forge genera los DMG y ZIP de macOS en `out/mac/`. Para empaquetar otro sistema operativo normalmente hay que compilar en ese mismo sistema. La firma de código y la notarización todavía no están configuradas.
 
 Para crear directamente desde macOS un instalador `.exe` de Windows x64, ejecuta:
 
@@ -118,7 +118,7 @@ Para crear directamente desde macOS un instalador `.exe` de Windows x64, ejecuta
 npm run desktop:make:win
 ```
 
-Usa las herramientas de compatibilidad Wine de electron-builder y deja el instalador en `release/`. En Apple Silicon debe estar disponible Rosetta. Prueba el instalador generado en Windows antes de distribuirlo; no está firmado.
+Usa las herramientas de compatibilidad Wine de electron-builder y deja el instalador y la aplicación descomprimida en `out/win/`. En Apple Silicon debe estar disponible Rosetta. Prueba el instalador generado en Windows antes de distribuirlo; no está firmado.
 
 La aplicación instalada inicia internamente el servidor independiente de Next.js en un puerto de bucle local disponible. El renderizador utiliza aislamiento de contexto, sandbox de procesos, integración con Node.js desactivada, solicitudes de permisos denegadas y navegación restringida. No necesita ningún servidor externo.
 

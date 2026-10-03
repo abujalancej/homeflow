@@ -68,6 +68,7 @@ module.exports = {
       /^\/node_modules($|\/)/,
       /^\/out($|\/)/,
       /^\/public($|\/)/,
+      /^\/release($|\/)/,
       /^\/scripts($|\/)/,
       /^\/src($|\/)/,
       /^\/(?:\.gitignore|\.nvmrc|AGENTS\.md|README(?:\.[a-z]+)?\.md)$/,
